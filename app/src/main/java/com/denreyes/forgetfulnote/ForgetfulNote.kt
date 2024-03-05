@@ -52,14 +52,27 @@ fun ForgetfulNoteApp() {
         }
         LazyColumn() {
             items(sItems) {
-                item -> ForgetfulNoteItem(item,
-                    onEditClick = {
-                         sItems = sItems.map{it.copy(isEditing = it.id == item.id)}
-                    },
-                    onDeleteClick = {
-                         sItems = sItems - item;
-                    }
-                )
+                item ->
+                if(item.isEditing) {
+                    ForgetfulNoteEditor(item, onEditComplete = {
+                        editedTitle, editedBody ->
+                        sItems = sItems.map{ it.copy(isEditing = false) }
+                        val editedItem = sItems.find { it.id == item.id }
+                        editedItem?.let {
+                            it.title = editedTitle
+                            it.body = editedBody
+                        }
+                    })
+                } else {
+                    ForgetfulNoteItem(item,
+                        onEditClick = {
+                            sItems = sItems.map{it.copy(isEditing = it.id == item.id)}
+                        },
+                        onDeleteClick = {
+                            sItems = sItems - item;
+                        }
+                    )
+                }
             }
         }
     }
@@ -107,6 +120,37 @@ fun ForgetfulNoteApp() {
                 }
             }
         )
+    }
+}
+
+@Composable
+fun ForgetfulNoteEditor(item: NoteItem,
+                        onEditComplete: (String, String) -> Unit) {
+    var editedTitle by remember { mutableStateOf(item.title) }
+    var editedBody by remember { mutableStateOf(item.body) }
+    var isEditing by remember { mutableStateOf(item.isEditing) }
+
+    Column (modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = editedTitle,
+            placeholder = { Text("Title") },
+            onValueChange = { editedTitle = it },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = editedBody,
+            placeholder = { Text("Body") },
+            onValueChange = { editedBody = it },
+            modifier = Modifier.height(100.dp).fillMaxWidth()
+        )
+        Button(modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                isEditing = false
+                onEditComplete(editedTitle, editedBody)
+            }) {
+            Text(text = "Save")
+        }
     }
 }
 
