@@ -33,7 +33,8 @@ import androidx.compose.ui.unit.dp
 
 data class NoteItem(val id: Int,
                     var title: String,
-                    var body: String)
+                    var body: String,
+                    var isEditing: Boolean = false)
 
 @Composable
 fun ForgetfulNoteApp() {
@@ -51,7 +52,14 @@ fun ForgetfulNoteApp() {
         }
         LazyColumn() {
             items(sItems) {
-                item -> ForgetfulNoteItem(item)
+                item -> ForgetfulNoteItem(item,
+                    onEditClick = {
+                         sItems = sItems.map{it.copy(isEditing = it.id == item.id)}
+                    },
+                    onDeleteClick = {
+                         sItems = sItems - item;
+                    }
+                )
             }
         }
     }
@@ -103,7 +111,11 @@ fun ForgetfulNoteApp() {
 }
 
 @Composable
-fun ForgetfulNoteItem(item: NoteItem) {
+fun ForgetfulNoteItem(
+    item: NoteItem,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
     Row(modifier = Modifier
         .padding(8.dp)
         .fillMaxWidth()
@@ -119,14 +131,15 @@ fun ForgetfulNoteItem(item: NoteItem) {
             Text(text = item.title)
             Text(text = item.body)
         }
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(onClick = onEditClick) {
             Icon(imageVector = Icons.Default.Edit, contentDescription = null)
         }
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(onClick = onDeleteClick) {
             Icon(imageVector = Icons.Default.Delete, contentDescription = null)
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun ForgetfulNoteAppPreview() {
